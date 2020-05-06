@@ -56,7 +56,10 @@ ostream &operator<<(std::ostream &os, const State &state) {
         }
         os << endl;
     }
-    os << " ----------- " << endl;
+    for (int k = 0; k < State::boardN; ++k) {
+        os << "----";
+    }
+    os <<  endl;
     return os;
 }
 

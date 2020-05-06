@@ -46,11 +46,19 @@ int main() {
         return 0;
     }
     else {
-//        executeSearch(start, goal, LINEAR_CONFLICT, IDA, true);
-//        executeSearch(start, goal, MANHATTAN, IDA, false);
-//        executeSearch(start, goal, HAMMING, IDA, false);
+        cout << "IDA:" << endl;
+        cout << "Linear Conflict:" << endl;
+        executeSearch(start, goal, LINEAR_CONFLICT, IDA, true);
+        cout << "Manhattan:" << endl;
+        executeSearch(start, goal, MANHATTAN, IDA, false);
+        cout << "Hamming:" << endl;
+        executeSearch(start, goal, HAMMING, IDA, false);
+        cout << "A*:" << endl;
+        cout << "Linear Conflict:" << endl;
         executeSearch(start, goal, LINEAR_CONFLICT, A_STAR, true);
+        cout << "Manhattan:" << endl;
         executeSearch(start, goal, MANHATTAN, A_STAR, false);
+        cout << "Hamming:" << endl;
         executeSearch(start, goal, HAMMING, A_STAR, false);
     }
 }
@@ -64,15 +72,17 @@ void executeSearch(const State &start, const State &goal,
     auto startTime = chrono::steady_clock::now();
 
     bool suc = starSearch->executeSearch(start, goal);
-    if (printSol && suc) {
-       starSearch->printPath(start, goal);
+    if (suc) {
+        if (printSol) {
+            starSearch->printPath(start, goal);
+        }
+        cout << "Solution Depth: " << starSearch->maxDepth << endl;
+        cout << "No. of Nodes Opened: " << starSearch->nExpanded << endl;
     }
 
     auto endTime = chrono::steady_clock::now();
     auto diff = endTime - startTime;
 
-    cout << "No of Nodes Opened: " << starSearch->nExpanded << endl;
-    cout << "Max Depth Reached: " << starSearch->maxDepth << endl;
     cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
     cout << endl;
     fflush(stdout);

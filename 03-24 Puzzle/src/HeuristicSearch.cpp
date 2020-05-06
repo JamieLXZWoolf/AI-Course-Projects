@@ -24,6 +24,8 @@ double HeuristicSearch::heuristicScore(const State &a, const State &b) {
 HeuristicSearch::~HeuristicSearch() {
     heuristicType = 0;
     closedList.clear();
+    while (!pStk.empty()) pStk.pop();
+    pSet.clear();
 }
 
 bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
@@ -80,7 +82,6 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
     nExpanded = closedList.size();
     return false;
 }
-
 
 double HeuristicSearch::hammingDistance(const State &a, const State &b) {
     int conflicts = 0;
@@ -151,12 +152,17 @@ double HeuristicSearch::linConfDistance(const State &a, const State &b) {
 void HeuristicSearch::printPath(const State &start, const State &goal) {
     std::vector<State> path;
     cout << "Getting path..." << endl;
-    getPath(path, start, goal);
+    if (searchType == A_STAR) {
+        getPathAStar(path, start, goal);
+    } else {
+        while (!pStk.empty()) path.push_back(pStk.top()), pStk.pop();
+        reverse(path.begin(), path.end());
+    }
+
     if (path.empty()) {
         cout << "Failed." << endl;
         return;
-    }
-    else {
+    } else {
         cout << "Fount path as follows:" << endl;
         for(auto & it : path) {
             cout << it;
@@ -174,10 +180,30 @@ bool HeuristicSearch::executeSearch(const State &start, const State &goal) {
 }
 
 bool HeuristicSearch::IDASearch(const State &start, const State &goal) {
-    return true;
+
+    nExpanded = 0;
+    maxDepth = 0;
+
+    double bound = heuristicScore(start, goal);
+
+    pStk.push(start);
+    pSet.insert(start);
+
+    double t;
+    int depth;
+
+    while (true) {
+        t = idaRecursiveSearch(pStk, pSet, 0, bound, goal);
+        if (t == FOUND) {
+            maxDepth = (int) pSet.size() - 1;
+            return true;
+        }
+        if (t == MAX_DOUBLE) return false;
+        bound = t;
+    }
 }
 
-void HeuristicSearch::getPath(vector<State> &path, const State& start, const State&goal) {
+void HeuristicSearch::getPathAStar(vector<State> &path, const State& start, const State&goal) {
     path.clear();
     State current = goal;
     while (!closedList[current].isEmpty) {
@@ -185,4 +211,47 @@ void HeuristicSearch::getPath(vector<State> &path, const State& start, const Sta
         current = closedList[current];
     }
     reverse(path.begin(), path.end());
+}
+
+double HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pathSet, int gScore, double bound, const State& goal) {
+    State current = path.top();
+    double fScore = gScore + heuristicScore(current, goal);
+
+    if (fScore > bound) return fScore;
+
+    if (current == goal) return FOUND;
+
+    double min = MAX_DOUBLE;
+
+    double t;
+
+    // for each neighbor of current
+    int zX = -1, zY = -1;
+    State::getZeroPos(current, zX, zY);
+    for (int i = 0; i < 4; ++i) {
+        int zXNew = zX + dirX[i];
+        int zYNew = zY + dirY[i];
+
+        if (isValid(zXNew, zYNew)) {
+            State neighbor = current;
+            swap(neighbor.A[zX][zY], neighbor.A[zXNew][zYNew]);
+            if (pathSet.find(neighbor) == pathSet.end()) {
+                path.push(neighbor);
+                pathSet.insert(neighbor);
+                nExpanded++;
+                t = idaRecursiveSearch(path, pathSet, gScore + 1, bound, goal);
+                if (t == FOUND) return t;
+                if (t < min) min = t;
+                pathSet.erase(path.top());
+                path.pop();
+            }
+        }
+    }
+
+    int depth = (int) pSet.size() - 1;
+    if (maxDepth < depth) {
+        maxDepth = depth;
+        cout << "Current max depth: " << maxDepth << ", nodes opened: " << nExpanded << endl;
+    }
+    return min;
 }

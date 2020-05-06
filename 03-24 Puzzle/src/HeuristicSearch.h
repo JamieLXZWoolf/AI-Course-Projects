@@ -9,17 +9,21 @@
 #include <queue>
 #include <map>
 #include <set>
+#include <stack>
 #include "State.h"
 
 #define MANHATTAN 1
 #define HAMMING 2
 #define LINEAR_CONFLICT 3
 
-#define LIMIT_DEPTH 600
-#define NODE_LIMIT 10000000
+#define LIMIT_DEPTH 100
+#define NODE_LIMIT 4000000
 
 #define A_STAR false
 #define IDA true
+
+#define FOUND -1
+#define MAX_DOUBLE 1.79769e+308
 
 class HeuristicSearch {
 public:
@@ -33,6 +37,10 @@ public:
     bool searchType = A_STAR;
 
     std::map<State, State> closedList;
+
+    std::stack<State> pStk;
+
+    std::set<State> pSet;
 
     // destructor
 
@@ -64,7 +72,9 @@ private:
 
     static bool isValid(int x, int y);
 
-    void getPath(std::vector<State> & path, const State& start, const State&goal);
+    double idaRecursiveSearch(std::stack<State> &path, std::set<State> &pathSet,int gScore, double bound, const State& goal);
+
+    void getPathAStar(std::vector<State> & path, const State& start, const State&goal);
 };
 
 

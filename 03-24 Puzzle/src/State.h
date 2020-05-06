@@ -13,11 +13,6 @@
 
 #define PRINT_W 3
 
-#define RIGHT 0
-#define LEFT 1
-#define DOWN 2
-#define UP 3
-
 typedef int8_t tile;
 
 class State {
