@@ -10,14 +10,6 @@ int dirY[4] = {1, -1, 0, 0}; // RIGHT-LEFT-DOWN-UP
 
 using namespace std;
 
-struct less_than_key
-{
-    inline bool operator() (const Node& struct1, const Node& struct2)
-    {
-        return (struct1.f < struct2.f);
-    }
-};
-
 bool HeuristicSearch::isValid(int x, int y) {
     return x >= 0 && y >= 0 && x < State::boardN && y < State::boardN;
 }
@@ -37,67 +29,54 @@ HeuristicSearch::~HeuristicSearch() {
 bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
     nExpanded = 0;
     maxDepth = 0;
-    vector<Node> openList;
-    double heu = heuristicScore(start, goal);
+    priority_queue<pair<double, State> > openList;
+    map<State, int> gScore;
+    double fScore;
+    int tentativeGScore;
     State nullState;
-    Node startNode = {start, nullState, 0, heu, 0 + heu};
-    openList.push_back(startNode);
-    closedList.push_back(startNode);
-    int counter = 0;
-
+    closedList[start] = nullState;
+    gScore[start] = 0; fScore = heuristicScore(start, goal);
+    openList.push({-fScore, start});
     while (!openList.empty()) {
-        if (++counter%1000 == 0) cout << openList.size() << endl;
-        auto itr = min_element(openList.begin(), openList.end());
-        Node u = *itr;
-        closedList.push_back(u);
-        openList.erase(itr);
-        ++nExpanded;
-        maxDepth = max(maxDepth, u.g);
+        if (++nExpanded%100000 == 0) cout << openList.size() << endl;
+        State current = openList.top().second;
+        maxDepth = max(maxDepth, gScore[current]);
+        openList.pop();
 
-        if (u.state == goal) {
+        if (current == goal) {
             return true;
         }
 
         if (maxDepth > LIMIT_DEPTH) {
-            cout << "Height limit exceeded! @" << endl << u.state;
+            cout << "Height limit exceeded! @" << endl << current;
             break;
         }
 
         if (closedList.size() > NODE_LIMIT) {
-            cout << "State limit exceeded! @" << endl << u.state;
+            cout << "State limit exceeded! @" << endl << current;
             break;
         }
 
+        // for each neighbor of current
         int zX = -1, zY = -1;
-        State::getZeroPos(u.state, zX, zY);
-
+        State::getZeroPos(current, zX, zY);
         for (int i = 0; i < 4; ++i) {
             int zXNew = zX + dirX[i];
             int zYNew = zY + dirY[i];
 
             if (isValid(zXNew, zYNew)) {
-                State temp = u.state;
-                swap(temp.A[zX][zY], temp.A[zXNew][zYNew]);
-                heu = heuristicScore(temp, goal);
-                Node v = {temp, u.state, u.g + 1, heu, u.g + 1 + heu};
-                auto itC = find(closedList.begin(), closedList.end(), v);
-                bool inClosed = itC != closedList.end();
-                if (inClosed) continue;
-                auto itO = find(openList.begin(), openList.end(), v);
-                bool inOpened = itO != openList.end();
-                if (!inOpened) openList.push_back(v);
-                else {
-                    Node actualNode = openList.at(distance(openList.begin(), itO));
-                    if (v.g < actualNode.g) {
-                        actualNode.g = v.g;
-                        actualNode.f = v.f;
-                        actualNode.parent = v.parent;
-                    }
+                State neighbor = current;
+                swap(neighbor.A[zX][zY], neighbor.A[zXNew][zYNew]);
+                tentativeGScore = gScore[current] + 1;
+                if ((gScore.find(neighbor) == gScore.end()) || (tentativeGScore < gScore[neighbor])) {
+                    closedList[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    fScore = gScore[neighbor] + heuristicScore(neighbor, goal);
+                    openList.push({-fScore, neighbor});
                 }
             }
         }
     }
-
     nExpanded = closedList.size();
     return false;
 }
@@ -172,13 +151,12 @@ double HeuristicSearch::linConfDistance(const State &a, const State &b) {
 void HeuristicSearch::printPath(const State &start, const State &goal) {
     std::vector<State> path;
     cout << "Getting path..." << endl;
-    int cost = getPath(path, start, goal);
+    getPath(path, start, goal);
     if (path.empty()) {
         cout << "Failed." << endl;
         return;
     }
     else {
-        cout << "Cost:" << cost << endl;
         cout << "Fount path as follows:" << endl;
         for(auto & it : path) {
             cout << it;
@@ -199,19 +177,12 @@ bool HeuristicSearch::IDASearch(const State &start, const State &goal) {
     return true;
 }
 
-int HeuristicSearch::getPath(vector<State> &path, const State& start, const State&goal) {
-    int cost = closedList.back().g;
-    path.push_back(closedList.back().state);
-    State parent = closedList.back().parent;
-
-    for (auto i = closedList.rbegin(); i != closedList.rend(); i++) {
-        if ((*i).state == parent && !((*i).state == start)) {
-            path.push_back((*i).state);
-            parent = (*i).parent;
-        }
+void HeuristicSearch::getPath(vector<State> &path, const State& start, const State&goal) {
+    path.clear();
+    State current = goal;
+    while (!closedList[current].isEmpty) {
+        path.push_back(current);
+        current = closedList[current];
     }
-    path.push_back(start);
-
     reverse(path.begin(), path.end());
-    return cost;
 }

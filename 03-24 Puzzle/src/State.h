@@ -54,9 +54,7 @@ public:
 
     static bool getZeroPos(const State &state, int &zX, int &zY);
 
-    [[nodiscard]] bool isSolvable() const;
-
-    [[maybe_unused]] static int oppositeDirection(int direction);
+    bool isSolvable() const;
 
 private:
 

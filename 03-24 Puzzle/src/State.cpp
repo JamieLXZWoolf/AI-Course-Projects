@@ -149,18 +149,3 @@ bool State::getZeroPos(const State &state, int &zX, int &zY) {
             }
     }
 }
-
-[[maybe_unused]] int State::oppositeDirection(int direction) {
-    switch (direction) {
-        case LEFT:
-            return RIGHT;
-        case RIGHT:
-            return LEFT;
-        case UP:
-            return DOWN;
-        case DOWN:
-            return UP;
-        default:
-            return EOF;
-    }
-}

@@ -6,6 +6,9 @@
 #define T4PUZZLE_HEURISTICSEARCH_H
 
 #include <algorithm>
+#include <queue>
+#include <map>
+#include <set>
 #include "State.h"
 
 #define MANHATTAN 1
@@ -13,34 +16,10 @@
 #define LINEAR_CONFLICT 3
 
 #define LIMIT_DEPTH 600
-#define NODE_LIMIT 3000000
+#define NODE_LIMIT 10000000
 
 #define A_STAR false
 #define IDA true
-
-struct Node {
-    State state;
-    State parent;
-    int g;
-    double h, f;
-
-    bool operator==(const Node &rhs) const {
-        return state == rhs.state;
-    }
-
-    bool operator==(const State &right) const {
-        return state == right;
-    }
-
-    bool operator<(const Node &rhs) const {
-        return f < rhs.f;
-    }
-
-    bool operator!=(const Node &rhs) const {
-        return !(rhs == *this);
-    }
-};
-
 
 class HeuristicSearch {
 public:
@@ -53,7 +32,7 @@ public:
 
     bool searchType = A_STAR;
 
-    std::vector<Node> closedList;
+    std::map<State, State> closedList;
 
     // destructor
 
@@ -85,7 +64,7 @@ private:
 
     static bool isValid(int x, int y);
 
-    int getPath(std::vector<State> & path, const State& start, const State&goal);
+    void getPath(std::vector<State> & path, const State& start, const State&goal);
 };
 
 
