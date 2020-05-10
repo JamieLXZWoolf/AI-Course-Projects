@@ -11,6 +11,7 @@
 #include <set>
 #include <stack>
 #include "State.h"
+#include "DisjointPatternDatabase.h"
 
 #define MANHATTAN 1
 #define HAMMING 2
@@ -70,12 +71,9 @@ private:
 
     // utilities
 
-    static bool isValid(int x, int y);
-
     double idaRecursiveSearch(std::stack<State> &path, std::set<State> &pathSet,int gScore, double bound, const State& goal);
 
     void getPathAStar(std::vector<State> & path, const State& start, const State&goal);
 };
-
 
 #endif //T4PUZZLE_HEURISTICSEARCH_H

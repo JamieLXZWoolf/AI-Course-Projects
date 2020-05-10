@@ -8,6 +8,10 @@ using namespace std;
 
 int State::boardN = 0;
 
+bool State::isValid(int x, int y) {
+    return x >= 0 && y >= 0 && x < State::boardN && y < State::boardN;
+}
+
 State::State() {
     isEmpty = true;
     A = new tile *[boardN];
@@ -143,7 +147,7 @@ int State::numInverted(const vector<int> &arr) {
     return inv_count;
 }
 
-bool State::getZeroPos(const State &state, int &zX, int &zY) {
+void State::getZeroPos(const State &state, int &zX, int &zY) {
     zX = zY = -1;
     for (int i = 0; i < State::boardN; i++) {
         for (int j = 0; j < State::boardN; j++)

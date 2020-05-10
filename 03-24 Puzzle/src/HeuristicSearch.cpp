@@ -5,14 +5,7 @@
 #include "HeuristicSearch.h"
 #include <utility>
 
-int dirX[4] = {0, 0, 1, -1}; // RIGHT-LEFT-DOWN-UP
-int dirY[4] = {1, -1, 0, 0}; // RIGHT-LEFT-DOWN-UP
-
 using namespace std;
-
-bool HeuristicSearch::isValid(int x, int y) {
-    return x >= 0 && y >= 0 && x < State::boardN && y < State::boardN;
-}
 
 double HeuristicSearch::heuristicScore(const State &a, const State &b) {
     if (heuristicType == HAMMING) return hammingDistance(a, b);
@@ -66,7 +59,7 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
             int zXNew = zX + dirX[i];
             int zYNew = zY + dirY[i];
 
-            if (isValid(zXNew, zYNew)) {
+            if (State::isValid(zXNew, zYNew)) {
                 State neighbor = current;
                 swap(neighbor.A[zX][zY], neighbor.A[zXNew][zYNew]);
                 tentativeGScore = gScore[current] + 1;
@@ -232,7 +225,7 @@ double HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &
         int zXNew = zX + dirX[i];
         int zYNew = zY + dirY[i];
 
-        if (isValid(zXNew, zYNew)) {
+        if (State::isValid(zXNew, zYNew)) {
             State neighbor = current;
             swap(neighbor.A[zX][zY], neighbor.A[zXNew][zYNew]);
             if (pathSet.find(neighbor) == pathSet.end()) {

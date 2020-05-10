@@ -15,6 +15,9 @@
 
 typedef int8_t tile;
 
+const int dirX[4] = {0, 0, 1, -1}; // RIGHT-LEFT-DOWN-UP
+const int dirY[4] = {1, -1, 0, 0}; // RIGHT-LEFT-DOWN-UP
+
 class State {
 public:
     // member variables
@@ -47,7 +50,9 @@ public:
 
     // utilities
 
-    static bool getZeroPos(const State &state, int &zX, int &zY);
+    static void getZeroPos(const State &state, int &zX, int &zY);
+
+    static bool isValid(int x, int y);
 
     bool isSolvable() const;
 

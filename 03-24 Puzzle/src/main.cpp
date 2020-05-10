@@ -16,13 +16,19 @@ int main() {
     State::boardN = boardN;
 
     State goal;
+
     for (int i = 0; i < boardN; ++i) {
         for (int j = 0; j < boardN; ++j) {
-            goal.A[i][j] = static_cast<tile>(i * State::boardN + j + 1);
+            goal.A[i][j] = static_cast<tile>(i * State::boardN + j);
         }
     }
-    goal.A[State::boardN - 1][State::boardN - 1] = 0;
     goal.isEmpty = false;
+
+    // create and save / load pattern databases
+    if (State::boardN == 5) {
+        DisjointPatternDatabase::goal= goal;
+        DisjointPatternDatabase pdb;
+    }
 
     State start;
     start.isEmpty = false;
