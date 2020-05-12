@@ -16,6 +16,7 @@
 #define MANHATTAN 1
 #define HAMMING 2
 #define LINEAR_CONFLICT 3
+#define D_PDB 4
 
 #define LIMIT_DEPTH 100
 #define NODE_LIMIT 4000000
@@ -24,7 +25,6 @@
 #define IDA true
 
 #define FOUND -1
-#define MAX_DOUBLE 1.79769e+308
 
 class HeuristicSearch {
 public:
@@ -49,21 +49,21 @@ public:
 
     // member functions
 
-    bool AStarSearch(const State &start, const State &goal);
+    bool AStarSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb);
 
-    bool IDASearch(const State &start, const State &goal);
+    bool IDASearch(const State &start, const State &goal, DisjointPatternDatabase & pdb);
 
-    bool executeSearch(const State &start, const State &goal);
+    bool executeSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb);
 
-    double heuristicScore(const State &a, const State &b);
+    int heuristicScore(const State &a, const State &b, DisjointPatternDatabase & pdb) const;
 
-    static double hammingDistance(const State &a, const State &b);
+    static int hammingDistance(const State &a, const State &b);
 
-    static double manhattanDistance(const State &a, const State &b);
+    static int manhattanDistance(const State &a, const State &b);
 
-    static double nLinConfDistance(const State &a, const State &b);
+    static int nLinConfDistance(const State &a, const State &b);
 
-    static double linConfDistance(const State &a, const State &b);
+    static int linConfDistance(const State &a, const State &b);
 
     void printPath(const State &start, const State &goal);
 
@@ -71,7 +71,8 @@ private:
 
     // utilities
 
-    double idaRecursiveSearch(std::stack<State> &path, std::set<State> &pathSet,int gScore, double bound, const State& goal);
+    int idaRecursiveSearch(std::stack<State> &path, std::set<State> &pathSet,int gScore, int bound,
+            const State& goal, DisjointPatternDatabase & pdb);
 
     void getPathAStar(std::vector<State> & path, const State& start, const State&goal);
 };

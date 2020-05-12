@@ -7,10 +7,12 @@
 
 using namespace std;
 
-double HeuristicSearch::heuristicScore(const State &a, const State &b) {
+int HeuristicSearch::heuristicScore(const State &a, const State &b, DisjointPatternDatabase & pdb) const {
     if (heuristicType == HAMMING) return hammingDistance(a, b);
     if (heuristicType == MANHATTAN) return manhattanDistance(a, b);
     if (heuristicType == LINEAR_CONFLICT) return linConfDistance(a, b);
+    // Note: BoardN must be 5!!!
+    if (heuristicType == D_PDB) return pdb.getHeuristic(a);
     return 0;
 }
 
@@ -21,16 +23,16 @@ HeuristicSearch::~HeuristicSearch() {
     pSet.clear();
 }
 
-bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
+bool HeuristicSearch::AStarSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
     nExpanded = 0;
     maxDepth = 0;
-    priority_queue<pair<double, State> > openList;
+    priority_queue<pair<int, State> > openList;
     map<State, int> gScore;
-    double fScore;
+    int fScore;
     int tentativeGScore;
     State nullState;
     closedList[start] = nullState;
-    gScore[start] = 0; fScore = heuristicScore(start, goal);
+    gScore[start] = 0; fScore = heuristicScore(start, goal, pdb);
     openList.push({-fScore, start});
     while (!openList.empty()) {
         if (++nExpanded%100000 == 0) cout << openList.size() << endl;
@@ -66,7 +68,7 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
                 if ((gScore.find(neighbor) == gScore.end()) || (tentativeGScore < gScore[neighbor])) {
                     closedList[neighbor] = current;
                     gScore[neighbor] = tentativeGScore;
-                    fScore = gScore[neighbor] + heuristicScore(neighbor, goal);
+                    fScore = gScore[neighbor] + heuristicScore(neighbor, goal, pdb);
                     openList.push({-fScore, neighbor});
                 }
             }
@@ -76,7 +78,7 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal) {
     return false;
 }
 
-double HeuristicSearch::hammingDistance(const State &a, const State &b) {
+int HeuristicSearch::hammingDistance(const State &a, const State &b) {
     int conflicts = 0;
     for (int i = 0; i < State::boardN; i++)
         for (int j = 0; j < State::boardN; j++)
@@ -84,14 +86,14 @@ double HeuristicSearch::hammingDistance(const State &a, const State &b) {
     return conflicts;
 }
 
-double HeuristicSearch::manhattanDistance(const State &a, const State &b) {
+int HeuristicSearch::manhattanDistance(const State &a, const State &b) {
     int sum = 0;
-    tile pR[(State::boardN * State::boardN) + 1];
-    tile pC[(State::boardN * State::boardN) + 1];
+    iByte pR[(State::boardN * State::boardN) + 1];
+    iByte pC[(State::boardN * State::boardN) + 1];
     for (int r = 0; r < State::boardN; r++) {
         for (int c = 0; c < State::boardN; c++) {
-            pR[a.A[r][c]] = static_cast<tile>(r);
-            pC[a.A[r][c]] = static_cast<tile>(c);
+            pR[a.A[r][c]] = static_cast<iByte>(r);
+            pC[a.A[r][c]] = static_cast<iByte>(c);
         }
     }
     for (int r = 0; r < State::boardN; r++)
@@ -101,14 +103,14 @@ double HeuristicSearch::manhattanDistance(const State &a, const State &b) {
     return sum;
 }
 
-double HeuristicSearch::nLinConfDistance(const State &a, const State &b) {
+int HeuristicSearch::nLinConfDistance(const State &a, const State &b) {
     int conflicts = 0;
-    tile pR[(State::boardN * State::boardN) + 1];
-    tile pC[(State::boardN * State::boardN) + 1];
+    iByte pR[(State::boardN * State::boardN) + 1];
+    iByte pC[(State::boardN * State::boardN) + 1];
     for (int r = 0; r < State::boardN; r++) {
         for (int c = 0; c < State::boardN; c++) {
-            pR[a.A[r][c]] = static_cast<tile>(r);
-            pC[a.A[r][c]] = static_cast<tile>(c);
+            pR[a.A[r][c]] = static_cast<iByte>(r);
+            pC[a.A[r][c]] = static_cast<iByte>(c);
         }
     }
 
@@ -138,7 +140,7 @@ double HeuristicSearch::nLinConfDistance(const State &a, const State &b) {
     return conflicts;
 }
 
-double HeuristicSearch::linConfDistance(const State &a, const State &b) {
+int HeuristicSearch::linConfDistance(const State &a, const State &b) {
     return manhattanDistance(a, b) + 2 * nLinConfDistance(a, b);
 }
 
@@ -163,35 +165,34 @@ void HeuristicSearch::printPath(const State &start, const State &goal) {
     }
 }
 
-bool HeuristicSearch::executeSearch(const State &start, const State &goal) {
+bool HeuristicSearch::executeSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
     if (searchType == A_STAR) {
-        return AStarSearch(start, goal);
+        return AStarSearch(start, goal, pdb);
     }
     else {
-        return IDASearch(start, goal);
+        return IDASearch(start, goal, pdb);
     }
 }
 
-bool HeuristicSearch::IDASearch(const State &start, const State &goal) {
+bool HeuristicSearch::IDASearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
 
     nExpanded = 0;
     maxDepth = 0;
 
-    double bound = heuristicScore(start, goal);
+    int bound = heuristicScore(start, goal, pdb);
 
     pStk.push(start);
     pSet.insert(start);
 
-    double t;
-    int depth;
+    int t;
 
     while (true) {
-        t = idaRecursiveSearch(pStk, pSet, 0, bound, goal);
+        t = idaRecursiveSearch(pStk, pSet, 0, bound, goal, pdb);
         if (t == FOUND) {
             maxDepth = (int) pSet.size() - 1;
             return true;
         }
-        if (t == MAX_DOUBLE) return false;
+        if (t == INT32_MAX) return false;
         bound = t;
     }
 }
@@ -206,17 +207,18 @@ void HeuristicSearch::getPathAStar(vector<State> &path, const State& start, cons
     reverse(path.begin(), path.end());
 }
 
-double HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pathSet, int gScore, double bound, const State& goal) {
+int HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pathSet, int gScore, int bound,
+        const State& goal, DisjointPatternDatabase & pdb) {
     State current = path.top();
-    double fScore = gScore + heuristicScore(current, goal);
+    int fScore = gScore + heuristicScore(current, goal, pdb);
 
     if (fScore > bound) return fScore;
 
     if (current == goal) return FOUND;
 
-    double min = MAX_DOUBLE;
+    int min = INT32_MAX;
 
-    double t;
+    int t;
 
     // for each neighbor of current
     int zX = -1, zY = -1;
@@ -232,7 +234,7 @@ double HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &
                 path.push(neighbor);
                 pathSet.insert(neighbor);
                 nExpanded++;
-                t = idaRecursiveSearch(path, pathSet, gScore + 1, bound, goal);
+                t = idaRecursiveSearch(path, pathSet, gScore + 1, bound, goal, pdb);
                 if (t == FOUND) return t;
                 if (t < min) min = t;
                 pathSet.erase(path.top());

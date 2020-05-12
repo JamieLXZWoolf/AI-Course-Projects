@@ -14,10 +14,10 @@ bool State::isValid(int x, int y) {
 
 State::State() {
     isEmpty = true;
-    A = new tile *[boardN];
+    A = new iByte *[boardN];
     for (int i = 0; i < boardN; ++i) {
-        A[i] = new tile[boardN];
-        memset(A[i], 0, boardN * sizeof(tile));
+        A[i] = new iByte[boardN];
+        memset(A[i], 0, boardN * sizeof(iByte));
     }
 }
 
@@ -26,10 +26,10 @@ State::State(const State &state) {
 //        this->~State();
         this->isEmpty = state.isEmpty;
 
-        A = new tile *[boardN];
+        A = new iByte *[boardN];
 
         for (int i = 0; i < boardN; ++i) {
-            A[i] = new tile[boardN];
+            A[i] = new iByte[boardN];
             for (int j = 0; j < boardN; ++j) {
                 A[i][j] = state.A[i][j];
             }
@@ -72,10 +72,10 @@ State &State::operator=(const State &state) {
         this->~State();
         this->isEmpty = state.isEmpty;
 
-        A = new tile *[boardN];
+        A = new iByte *[boardN];
 
         for (int i = 0; i < boardN; ++i) {
-            A[i] = new tile[boardN];
+            A[i] = new iByte[boardN];
             for (int j = 0; j < boardN; ++j) {
                 A[i][j] = state.A[i][j];
             }

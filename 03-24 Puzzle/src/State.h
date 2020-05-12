@@ -13,7 +13,7 @@
 
 #define PRINT_W 3
 
-typedef int8_t tile;
+typedef int8_t iByte;
 
 const int dirX[4] = {0, 0, 1, -1}; // RIGHT-LEFT-DOWN-UP
 const int dirY[4] = {1, -1, 0, 0}; // RIGHT-LEFT-DOWN-UP
@@ -26,7 +26,7 @@ public:
 
     bool isEmpty;
 
-    tile **A;
+    iByte **A;
 
     // constructors and destructor
 
