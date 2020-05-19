@@ -6,6 +6,7 @@
 #define T4PUZZLE_DISJOINTPATTERNDATABASE_H
 
 #include <map>
+#include <array>
 #include <bitset>
 #include <fstream>
 #include <string>
@@ -47,9 +48,13 @@ public:
 
     static void getNumPos(const State &state, int &zX, int &zY, iByte N);
 
-    static std::vector<unsigned> getCord(const State & s, std::vector<iByte> &pdbNs);
+    static std::vector<iByte> getCord(const State & s, const std::vector<iByte> &pdbNs);
 
     static void initV6(v6 &vec);
+
+    static std::array<iByte, 7> encode(const State &s, const std::vector<iByte> &pdbNs);
+
+    static State decode(const std::array<iByte, 7> &v, const std::vector<iByte> &pdbNS);
 };
 
 #endif //T4PUZZLE_DISJOINTPATTERNDATABASE_H

@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <chrono>
 #include "State.h"
 #include "DisjointPatternDatabase.h"
 
@@ -20,6 +21,7 @@
 
 #define LIMIT_DEPTH 100
 #define NODE_LIMIT 4000000
+#define TIME_LIMIT 600000.0
 
 #define A_STAR false
 #define IDA true

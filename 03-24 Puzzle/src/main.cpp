@@ -1,8 +1,6 @@
 //
 // Created by Jamie on 5/4/2020.
 //
-
-#include <chrono>
 #include "HeuristicSearch.h"
 
 using namespace std;
@@ -57,19 +55,19 @@ int main() {
                 cout << "Disjoint Pattern Database:" << endl;
                 executeSearch(pdb, start, goal, D_PDB, IDA, true);
             }
-            cout << "Linear Conflict:" << endl;
-            executeSearch(pdb, start, goal, LINEAR_CONFLICT, IDA, true);
-            cout << "Manhattan:" << endl;
-            executeSearch(pdb, start, goal, MANHATTAN, IDA, false);
-            cout << "Hamming:" << endl;
-            executeSearch(pdb, start, goal, HAMMING, IDA, false);
-            cout << "A*:" << endl;
-            cout << "Linear Conflict:" << endl;
-            executeSearch(pdb, start, goal, LINEAR_CONFLICT, A_STAR, true);
-            cout << "Manhattan:" << endl;
-            executeSearch(pdb, start, goal, MANHATTAN, A_STAR, false);
-            cout << "Hamming:" << endl;
-            executeSearch(pdb, start, goal, HAMMING, A_STAR, false);
+//            cout << "Linear Conflict:" << endl;
+//            executeSearch(pdb, start, goal, LINEAR_CONFLICT, IDA, true);
+//            cout << "Manhattan:" << endl;
+//            executeSearch(pdb, start, goal, MANHATTAN, IDA, false);
+//            cout << "Hamming:" << endl;
+//            executeSearch(pdb, start, goal, HAMMING, IDA, false);
+//            cout << "A*:" << endl;
+//            cout << "Linear Conflict:" << endl;
+//            executeSearch(pdb, start, goal, LINEAR_CONFLICT, A_STAR, true);
+//            cout << "Manhattan:" << endl;
+//            executeSearch(pdb, start, goal, MANHATTAN, A_STAR, false);
+//            cout << "Hamming:" << endl;
+//            executeSearch(pdb, start, goal, HAMMING, A_STAR, false);
         }
     }
 }
@@ -80,8 +78,6 @@ void executeSearch(DisjointPatternDatabase &pdb, const State &start, const State
     starSearch->heuristicType = heuristic;
     starSearch->searchType = searchType;
 
-    auto startTime = chrono::steady_clock::now();
-
     bool suc = starSearch->executeSearch(start, goal, pdb);
     if (suc) {
         if (printSol) {
@@ -90,11 +86,6 @@ void executeSearch(DisjointPatternDatabase &pdb, const State &start, const State
         cout << "Solution Depth: " << starSearch->maxDepth << endl;
         cout << "No. of Nodes Opened: " << starSearch->nExpanded << endl;
     }
-
-    auto endTime = chrono::steady_clock::now();
-    auto diff = endTime - startTime;
-
-    cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
     cout << endl;
     fflush(stdout);
     delete starSearch;

@@ -125,8 +125,8 @@ void DisjointPatternDatabase::getPDB(v6 &pdbMap, vector<iByte> &pdbNs) {
 
     cout << maskedGoal;
 
-    queue<State> que;
-    que.push(maskedGoal);
+    queue<array<iByte, 7>> que;
+    que.push(encode(maskedGoal, pdbNs));
 
     cout << "Allocating 6-D bitset vector... ";
     // initialize a bitset that stores the visited state.
@@ -158,7 +158,7 @@ void DisjointPatternDatabase::getPDB(v6 &pdbMap, vector<iByte> &pdbNs) {
 
     cout << "Done." << endl;
 
-    vector<unsigned> c = getCord(maskedGoal, pdbNs), d;
+    vector<iByte> c = getCord(maskedGoal, pdbNs), d;
 
     pdbMap[c[0]][c[1]][c[2]][c[3]][c[4]][c[5]] = 0;
 
@@ -175,13 +175,9 @@ void DisjointPatternDatabase::getPDB(v6 &pdbMap, vector<iByte> &pdbNs) {
     visited[c[0]][c[1]][c[2]][c[3]][c[4]][c[5]][bitPosition] = true;
 
     while (!que.empty()) {
-        auto current = que.front();
+        auto current = decode(que.front(), pdbNs);
         que.pop();
         d = getCord(current, pdbNs);
-        // for each neighbor of current
-
-//        for (int i = 0; i < 6; ++i) {
-//            N = pdbNs[i];
         getNumPos(current, zX, zY, 0);
         for (int j = 0; j < 4; ++j) {
             int zXNew = zX + dirX[j];
@@ -195,7 +191,7 @@ void DisjointPatternDatabase::getPDB(v6 &pdbMap, vector<iByte> &pdbNs) {
 
                 if (visited[c[0]][c[1]][c[2]][c[3]][c[4]][c[5]][bitPosition]) continue;
                 visited[c[0]][c[1]][c[2]][c[3]][c[4]][c[5]][bitPosition] = true;
-                que.push(neighbor);
+                que.push(encode(neighbor, pdbNs));
                 if (pdbMap[c[0]][c[1]][c[2]][c[3]][c[4]][c[5]] == -1) {
                     if (++counter % 100000 == 0) cout << 100 * (double) counter/ (double) ALL_PERM << "% complete." << endl;
                     cost = pdbMap[d[0]][d[1]][d[2]][d[3]][d[4]][d[5]];
@@ -203,7 +199,6 @@ void DisjointPatternDatabase::getPDB(v6 &pdbMap, vector<iByte> &pdbNs) {
                 }
             }
         }
-//        }
     }
     cout << "completed." << endl;
 }
@@ -218,8 +213,8 @@ void DisjointPatternDatabase::getNumPos(const State &state, int &zX, int &zY, iB
     }
 }
 
-std::vector<unsigned> DisjointPatternDatabase::getCord(const State &s, vector<iByte> &pdbNs) {
-    vector<unsigned> res;
+std::vector<iByte> DisjointPatternDatabase::getCord(const State &s, const vector<iByte> &pdbNs) {
+    vector<iByte> res;
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 5; ++j) {
             for (int k = 0; k < 5; ++k) {
@@ -258,7 +253,7 @@ void DisjointPatternDatabase::initV6(v6 &vec) {
 
 int DisjointPatternDatabase::getHeuristic(const State &s) {
     int n1, n2, n3, n4, i1, i2, i3, i4;
-    vector<unsigned> c1, c2, c3, c4, d1, d2 ,d3, d4;
+    vector<iByte> c1, c2, c3, c4, d1, d2 ,d3, d4;
     c1 = getCord(s, nmPs[0]), c2 = getCord(s, nmPs[1]), c3 = getCord(s, nmPs[2]), c4 = getCord(s, nmPs[3]);
     d1 = getCord(s, rvPs[0]), d2 = getCord(s, rvPs[1]), d3 = getCord(s, rvPs[2]), d4 = getCord(s, rvPs[3]);
     n1 = normalPds[0][c1[0]][c1[1]][c1[2]][c1[3]][c1[4]][c1[5]];
@@ -272,4 +267,37 @@ int DisjointPatternDatabase::getHeuristic(const State &s) {
     i4 = reversePds[3][d4[0]][d4[1]][d4[2]][d4[3]][d4[4]][d4[5]];
 
     return max(n1 + n2 + n3 + n4, i1 + i2 + i3 + i4);
+}
+
+array<iByte, 7> DisjointPatternDatabase::encode(const State &s, const vector<iByte> &pdbNs) {
+    array<iByte, 7> res{0, 0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            for (int k = 0; k < 5; ++k) {
+                if (pdbNs[i] == s.A[j][k]) res[i] = (j*5 + k);
+            }
+        }
+    }
+    for (int j = 0; j < 5; ++j) {
+        for (int k = 0; k < 5; ++k) {
+            if ( s.A[j][k] == 0 ) res[6] = (j*5 + k);
+        }
+    }
+    return res;
+}
+State DisjointPatternDatabase::decode(const array<iByte, 7> &v, const vector<iByte> &pdbNS) {
+    State res = goal;
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            res.A[i][j] = -1;
+        }
+    }
+    iByte pos;
+    for (int k = 0; k < 6; ++k) {
+        pos = v[k];
+        res.A[pos/5][pos%5] = pdbNS[k];
+    }
+    pos = v[6];
+    res.A[pos/5][pos%5] = 0;
+    return res;
 }

@@ -24,6 +24,7 @@ HeuristicSearch::~HeuristicSearch() {
 }
 
 bool HeuristicSearch::AStarSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
+    auto startTime = chrono::steady_clock::now();
     nExpanded = 0;
     maxDepth = 0;
     priority_queue<pair<int, State> > openList;
@@ -41,9 +42,15 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal, Disjoin
         openList.pop();
 
         if (current == goal) {
+            auto endTime = chrono::steady_clock::now();
+            auto diff = endTime - startTime;
+            cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
             return true;
         }
-
+        if (chrono::duration<double, milli>(chrono::steady_clock::now() - startTime).count() >= TIME_LIMIT) {
+            cout << "Time limit of 1 min exceeded." << endl;
+            return false;
+        }
         if (maxDepth > LIMIT_DEPTH) {
             cout << "Height limit exceeded! @" << endl << current;
             break;
@@ -176,6 +183,8 @@ bool HeuristicSearch::executeSearch(const State &start, const State &goal, Disjo
 
 bool HeuristicSearch::IDASearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
 
+    auto startTime = chrono::steady_clock::now();
+
     nExpanded = 0;
     maxDepth = 0;
 
@@ -187,9 +196,17 @@ bool HeuristicSearch::IDASearch(const State &start, const State &goal, DisjointP
     int t;
 
     while (true) {
+        if (chrono::duration<double, milli>(chrono::steady_clock::now() - startTime).count() >= TIME_LIMIT) {
+            cout << "Time limit of 10 min exceeded." << endl;
+        }
+
         t = idaRecursiveSearch(pStk, pSet, 0, bound, goal, pdb);
+
         if (t == FOUND) {
             maxDepth = (int) pSet.size() - 1;
+            auto endTime = chrono::steady_clock::now();
+            auto diff = endTime - startTime;
+            cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
             return true;
         }
         if (t == INT32_MAX) return false;
