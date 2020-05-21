@@ -24,8 +24,8 @@ HeuristicSearch::~HeuristicSearch() {
 }
 
 bool HeuristicSearch::AStarSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
-    auto startTime = chrono::steady_clock::now();
-    nExpanded = 0;
+    stt = clock();
+    nEncountered = 0;
     maxDepth = 0;
     priority_queue<pair<int, State> > openList;
     map<State, int> gScore;
@@ -36,27 +36,28 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal, Disjoin
     gScore[start] = 0; fScore = heuristicScore(start, goal, pdb);
     openList.push({-fScore, start});
     while (!openList.empty()) {
-        if (++nExpanded%100000 == 0) cout << openList.size() << endl;
         State current = openList.top().second;
         maxDepth = max(maxDepth, gScore[current]);
         openList.pop();
 
+        usedTime = (double) (clock() - stt) / CLOCKS_PER_SEC;
+
         if (current == goal) {
-            auto endTime = chrono::steady_clock::now();
-            auto diff = endTime - startTime;
-            cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
+            cout << "Found. Execution Time: " << usedTime << "s" << endl;
             return true;
         }
-        if (chrono::duration<double, milli>(chrono::steady_clock::now() - startTime).count() >= TIME_LIMIT) {
-            cout << "Time limit of 1 min exceeded." << endl;
+
+        if (usedTime >= TIME_LIMIT) {
+            cout << "Used " << usedTime  << " seconds. Time limit exceeded." << endl;
             return false;
         }
+
         if (maxDepth > LIMIT_DEPTH) {
             cout << "Height limit exceeded! @" << endl << current;
             break;
         }
 
-        if (closedList.size() > NODE_LIMIT) {
+        if (nEncountered > NODE_LIMIT) {
             cout << "State limit exceeded! @" << endl << current;
             break;
         }
@@ -77,11 +78,13 @@ bool HeuristicSearch::AStarSearch(const State &start, const State &goal, Disjoin
                     gScore[neighbor] = tentativeGScore;
                     fScore = gScore[neighbor] + heuristicScore(neighbor, goal, pdb);
                     openList.push({-fScore, neighbor});
+                    nEncountered = openList.size();
+                    if (nEncountered % 100000 == 0) cout << nEncountered << endl;
                 }
             }
         }
     }
-    nExpanded = closedList.size();
+    nEncountered = closedList.size();
     return false;
 }
 
@@ -183,9 +186,9 @@ bool HeuristicSearch::executeSearch(const State &start, const State &goal, Disjo
 
 bool HeuristicSearch::IDASearch(const State &start, const State &goal, DisjointPatternDatabase & pdb) {
 
-    auto startTime = chrono::steady_clock::now();
+    stt = clock();
 
-    nExpanded = 0;
+    nEncountered = 0;
     maxDepth = 0;
 
     int bound = heuristicScore(start, goal, pdb);
@@ -196,17 +199,18 @@ bool HeuristicSearch::IDASearch(const State &start, const State &goal, DisjointP
     int t;
 
     while (true) {
-        if (chrono::duration<double, milli>(chrono::steady_clock::now() - startTime).count() >= TIME_LIMIT) {
-            cout << "Time limit of 10 min exceeded." << endl;
-        }
 
         t = idaRecursiveSearch(pStk, pSet, 0, bound, goal, pdb);
 
+        if (t == EXCEED) {
+            cout << "Used " << usedTime  << " seconds. Time limit exceeded." << endl;
+            return false;
+        }
+
         if (t == FOUND) {
             maxDepth = (int) pSet.size() - 1;
-            auto endTime = chrono::steady_clock::now();
-            auto diff = endTime - startTime;
-            cout << "Execution Time: " << chrono::duration<double, milli>(diff).count() << "ms" << endl;
+            usedTime = (double) (clock() - stt) / CLOCKS_PER_SEC;
+            cout << "Found. Execution Time: " << usedTime << "s" << endl;
             return true;
         }
         if (t == INT32_MAX) return false;
@@ -233,6 +237,9 @@ int HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pat
 
     if (current == goal) return FOUND;
 
+    usedTime = (double) (clock() - stt) / CLOCKS_PER_SEC;
+    if (usedTime > TIME_LIMIT) return EXCEED;
+
     int min = INT32_MAX;
 
     int t;
@@ -250,7 +257,7 @@ int HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pat
             if (pathSet.find(neighbor) == pathSet.end()) {
                 path.push(neighbor);
                 pathSet.insert(neighbor);
-                nExpanded++;
+                nEncountered++;
                 t = idaRecursiveSearch(path, pathSet, gScore + 1, bound, goal, pdb);
                 if (t == FOUND) return t;
                 if (t < min) min = t;
@@ -263,7 +270,7 @@ int HeuristicSearch::idaRecursiveSearch(stack<State> &path, std::set<State> &pat
     int depth = (int) pSet.size() - 1;
     if (maxDepth < depth) {
         maxDepth = depth;
-        cout << "Current max depth: " << maxDepth << ", nodes opened: " << nExpanded << endl;
+        cout << "Current max depth: " << maxDepth << ", nodes opened: " << nEncountered << endl;
     }
     return min;
 }

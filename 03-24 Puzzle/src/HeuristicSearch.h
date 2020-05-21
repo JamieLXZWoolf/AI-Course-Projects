@@ -10,7 +10,7 @@
 #include <map>
 #include <set>
 #include <stack>
-#include <chrono>
+#include <ctime>
 #include "State.h"
 #include "DisjointPatternDatabase.h"
 
@@ -21,34 +21,27 @@
 
 #define LIMIT_DEPTH 100
 #define NODE_LIMIT 4000000
-#define TIME_LIMIT 600000.0
+#define TIME_LIMIT 6000
 
 #define A_STAR false
 #define IDA true
 
 #define FOUND -1
+#define EXCEED -2
 
 class HeuristicSearch {
 public:
-
     int maxDepth = 0;
-
-    int nExpanded = 0;
-
+    int nEncountered = 0;
     int heuristicType = MANHATTAN;
-
     bool searchType = A_STAR;
-
     std::map<State, State> closedList;
-
     std::stack<State> pStk;
-
     std::set<State> pSet;
-
+    clock_t stt;
+    double usedTime;
     // destructor
-
     virtual ~HeuristicSearch();
-
     // member functions
 
     bool AStarSearch(const State &start, const State &goal, DisjointPatternDatabase & pdb);

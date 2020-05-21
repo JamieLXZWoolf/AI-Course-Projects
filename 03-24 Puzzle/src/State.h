@@ -54,7 +54,7 @@ public:
 
     static bool isValid(int x, int y);
 
-    bool isSolvable() const;
+    bool isSolvable(const State &goal) const;
 
 private:
 

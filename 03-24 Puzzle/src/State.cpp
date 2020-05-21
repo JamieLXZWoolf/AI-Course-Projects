@@ -119,22 +119,31 @@ bool State::operator<(const State &right) const {
     return false;
 }
 
-bool State::isSolvable() const {
-    unsigned blankPosition = 0;
-    vector<int> arr;
+bool State::isSolvable(const State &goal) const {
+    unsigned selfBlankPosition = 0;
+    unsigned goalBlankPosition = 0;
+    vector<int> selfArr;
+    vector<int> goalArr;
 
     for (int i = 0; i < boardN; ++i) {
         for (int j = 0; j < boardN; ++j) {
-            if(A[i][j]) arr.push_back(A[i][j]);
-            else blankPosition = i;
+            if(A[i][j]) selfArr.push_back(A[i][j]);
+            else selfBlankPosition = i;
+            if(goal.A[i][j]) goalArr.push_back(goal.A[i][j]);
+            else goalBlankPosition = i;
         }
     }
 
-    unsigned invCount = numInverted(arr);
+    unsigned selfInvCount = numInverted(selfArr);
+
+
+
+    unsigned goalInvCount = numInverted(goalArr);
 
     bool isOddBoard = static_cast<bool>(boardN & 1);
 
-    return ((isOddBoard && !(invCount & 1)) || (!isOddBoard && ((blankPosition + invCount) & 1)));
+    return ((isOddBoard && ((selfInvCount & 1) == (goalInvCount & 1))) ||
+    (!isOddBoard && (((selfInvCount + selfBlankPosition) & 1) == ((goalInvCount + goalBlankPosition) & 1))));
 }
 
 int State::numInverted(const vector<int> &arr) {

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void executeSearch(DisjointPatternDatabase &pdb, const State &start, const State &goal,
+bool executeSearch(DisjointPatternDatabase &pdb, const State &start, const State &goal,
                    int heuristic = LINEAR_CONFLICT, bool searchType = A_STAR, bool printSol = true);
 
 int main() {
@@ -46,33 +46,37 @@ int main() {
         cout << "Hamming Distance: " << HeuristicSearch::hammingDistance(start, goal) << endl;
         cout << "N Linear Conflicts: " << HeuristicSearch::linConfDistance(start, goal) << endl;
 
-        if (!start.isSolvable()) {
+        if (!start.isSolvable(goal)) {
             cout << "No solution!" << endl;
         }
         else {
             cout << "IDA:" << endl;
             if (State::boardN == 5) {
                 cout << "Disjoint Pattern Database:" << endl;
-                executeSearch(pdb, start, goal, D_PDB, IDA, true);
+                 if (!executeSearch(pdb, start, goal, D_PDB, IDA, true)) continue;
             }
-//            cout << "Linear Conflict:" << endl;
-//            executeSearch(pdb, start, goal, LINEAR_CONFLICT, IDA, true);
-//            cout << "Manhattan:" << endl;
-//            executeSearch(pdb, start, goal, MANHATTAN, IDA, false);
-//            cout << "Hamming:" << endl;
-//            executeSearch(pdb, start, goal, HAMMING, IDA, false);
-//            cout << "A*:" << endl;
-//            cout << "Linear Conflict:" << endl;
-//            executeSearch(pdb, start, goal, LINEAR_CONFLICT, A_STAR, true);
-//            cout << "Manhattan:" << endl;
-//            executeSearch(pdb, start, goal, MANHATTAN, A_STAR, false);
-//            cout << "Hamming:" << endl;
-//            executeSearch(pdb, start, goal, HAMMING, A_STAR, false);
+            cout << "Linear Conflict:" << endl;
+            if (!executeSearch(pdb, start, goal, LINEAR_CONFLICT, IDA, true)) continue;
+            cout << "Manhattan:" << endl;
+            executeSearch(pdb, start, goal, MANHATTAN, IDA, false);
+            cout << "Hamming:" << endl;
+            executeSearch(pdb, start, goal, HAMMING, IDA, false);
+            cout << "A*:" << endl;
+            if (State::boardN == 5) {
+                cout << "Disjoint Pattern Database:" << endl;
+                if (!executeSearch(pdb, start, goal, D_PDB, A_STAR, true)) continue;
+            }
+            cout << "Linear Conflict:" << endl;
+            if (!executeSearch(pdb, start, goal, LINEAR_CONFLICT, A_STAR, false)) continue;
+            cout << "Manhattan:" << endl;
+            if (!executeSearch(pdb, start, goal, MANHATTAN, A_STAR, false)) continue;
+            cout << "Hamming:" << endl;
+            if (!executeSearch(pdb, start, goal, HAMMING, A_STAR, false)) continue;
         }
     }
 }
 
-void executeSearch(DisjointPatternDatabase &pdb, const State &start, const State &goal,
+bool executeSearch(DisjointPatternDatabase &pdb, const State &start, const State &goal,
                    int heuristic, bool searchType, bool printSol) {
     auto *starSearch = new HeuristicSearch();
     starSearch->heuristicType = heuristic;
@@ -84,9 +88,10 @@ void executeSearch(DisjointPatternDatabase &pdb, const State &start, const State
             starSearch->printPath(start, goal);
         }
         cout << "Solution Depth: " << starSearch->maxDepth << endl;
-        cout << "No. of Nodes Opened: " << starSearch->nExpanded << endl;
+        cout << "No. of Nodes Opened: " << starSearch->nEncountered << endl;
     }
     cout << endl;
     fflush(stdout);
     delete starSearch;
+    return suc;
 }
